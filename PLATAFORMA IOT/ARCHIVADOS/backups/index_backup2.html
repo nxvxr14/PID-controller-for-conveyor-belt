@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control de SP</title>
+    <!-- Agrega los enlaces a las bibliotecas necesarias -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.2.0/socket.io.js"></script>
+</head>
+<body>
+    <h1>Control de SP</h1>
+    <label for="spInput">SP:</label>
+    <input type="number" id="spInput" step="0.001">
+    <button onclick="actualizarSP()">Actualizar</button>
+
+    <!-- Agrega un elemento canvas para el gráfico -->
+    <canvas id="realtimeChart" width="800" height="400"></canvas>
+
+    <script>
+        const socket = io();
+
+        // Agrega un objeto Chart para manejar los datos en tiempo real
+        const ctx = document.getElementById('realtimeChart').getContext('2d');
+        const chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                datasets: [{
+                    label: 'Velocidad Filtrada',
+                    data: [],
+                    borderColor: 'blue',
+                    borderWidth: 1,
+                    fill: false
+                },
+                {
+                    label: 'SP',
+                    data: [],
+                    borderColor: 'red',
+                    borderWidth: 1,
+                    fill: false,
+                    borderDash: [5, 5]
+                }]
+            },
+            options: {
+                animation: false,
+                scales: {
+                    x: {
+                        type: 'linear',
+                        position: 'bottom',
+                        ticks: {
+                            stepSize: 1000,  // Puedes ajustar esto según tus necesidades
+                            callback: function(value, index, values) {
+                                return value / 1000 + 's';  // Convierte milisegundos a segundos
+                            }
+                        }
+                    },
+                    y: {
+                        min: 0,
+                        max: 1200
+                    }
+                }
+            }
+        });
+
+        // Función para actualizar el gráfico con nuevos datos
+        function updateChart(data) {
+            chart.data.datasets[0].data.push({ x: data.elapsedTime, y: data.velFiltered });
+
+            // Asegúrate de que la escala del eje X se ajuste correctamente
+            const maxXValue = chart.data.datasets[0].data[chart.data.datasets[0].data.length - 1].x;
+            const minXValue = Math.max(0, maxXValue - 10000);
+            chart.options.scales.x.min = minXValue;
+
+            // Limpiar datos antiguos que ya no se están graficando
+            const cutoffTime = minXValue;
+            chart.data.datasets[0].data = chart.data.datasets[0].data.filter(point => point.x >= cutoffTime);
+
+            // Actualiza la línea SP con el valor actual de SP
+            const spValue = parseFloat(document.getElementById('spInput').value);
+            chart.data.datasets[1].data = [
+                { x: minXValue, y: spValue },
+                { x: maxXValue, y: spValue }
+            ];
+
+            chart.update();
+        }
+
+        // Función para enviar la solicitud de actualización de SP al servidor
+        function actualizarSP() {
+            var spValue = document.getElementById('spInput').value;
+            var autoincrementValue = spValue !== '0';
+            
+            fetch('/actualizar-sp', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ sp: parseFloat(spValue), autoincrement: autoincrementValue }),
+            });
+        }
+
+        // Escuchar el evento de actualización de datos desde el servidor
+        socket.on('updateData', updateChart);
+    </script>
+</body>
+</html>

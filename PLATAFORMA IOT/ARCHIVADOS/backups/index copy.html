@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control de SP</title>
+</head>
+<body>
+    <h1>Control de SP</h1>
+    <label for="spInput">SP:</label>
+    <input type="number" id="spInput" step="0.001">
+    <button onclick="actualizarSP()">Actualizar</button>
+
+    <script>
+        function actualizarSP() {
+            var spValue = document.getElementById('spInput').value;
+            var autoincrementValue = spValue !== '0'; // autoincrement es true si spValue no es 0
+            
+            fetch('/actualizar-sp', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ sp: parseFloat(spValue), autoincrement: autoincrementValue }),
+            });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,651 @@
+<!doctype html>
+<!--
+  Material Design Lite
+  Copyright 2015 Google Inc. All rights reserved.
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      https://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="description" content="A front-end template that helps you build fast, modern mobile web apps.">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+    <title>PROYECTO CONTROL 202360</title>
+
+    <!-- Add to homescreen for Chrome on Android -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <link rel="icon" sizes="192x192" href="images/android-desktop.png">
+
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+
+    <!-- Add to homescreen for Safari on iOS -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-title" content="Material Design Lite">
+    <link rel="apple-touch-icon-precomposed" href="images/ios-desktop.png">
+
+    <!-- Tile icon for Win8 (144x144 + tile color) -->
+    <meta name="msapplication-TileImage" content="images/touch/ms-touch-icon-144x144-precomposed.png">
+    <meta name="msapplication-TileColor" content="#3372DF">
+
+    <link rel="shortcut icon" href="images/favicon.png">
+
+    <!-- SEO: If your mobile URL is different from the desktop URL, add a canonical link to the desktop page https://developers.google.com/webmasters/smartphone-sites/feature-phones -->
+    <!--
+    <link rel="canonical" href="http://www.example.com/">
+    -->
+    <!-- Enlaces a las bibliotecas necesarias -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.2.0/socket.io.js"></script>
+
+
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:regular,bold,italic,thin,light,bolditalic,black,medium&amp;lang=en">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link rel="stylesheet" href="https://code.getmdl.io/1.3.0/material.cyan-light_blue.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+    #view-source {
+      position: fixed;
+      display: block;
+      right: 0;
+      bottom: 0;
+      margin-right: 40px;
+      margin-bottom: 40px;
+      z-index: 900;
+    }
+    </style>
+  </head>
+  <body>
+    <div class="demo-layout mdl-layout mdl-js-layout mdl-layout--fixed-drawer mdl-layout--fixed-header">
+      <header class="demo-header mdl-layout__header mdl-color--grey-100 mdl-color-text--grey-600">
+        <div class="mdl-layout__header-row">
+          <span class="mdl-layout-title">PANEL DE CONTROL BANDA TRANSPORTADORA</span>
+
+      </header>
+      <div class="demo-drawer mdl-layout__drawer mdl-color--blue-grey-900 mdl-color-text--blue-grey-50">
+        <header class="demo-drawer-header">
+          <img src="https://scontent.fbga1-4.fna.fbcdn.net/v/t39.30808-6/391636839_738414944996820_5038981415114617347_n.jpg?_nc_cat=104&ccb=1-7&_nc_sid=5f2048&_nc_ohc=kb1-F7NWWOcAX_vqJTa&_nc_ht=scontent.fbga1-4.fna&oh=00_AfBHRTDzfYmEZ7NLZpHfakyx2vyl1i6lHe3TsS97ZICk9g&oe=655AD137" class="demo-avatar">
+          <div class="demo-avatar-dropdown">
+            <span>UNAB</span>
+
+        </header>
+        <nav class="demo-navigation mdl-navigation mdl-color--blue-grey-800">
+          <a class="mdl-navigation__link" href="javascript:window.location.href=window.location.href"><i class="mdl-color-text--blue-grey-400 material-icons" role="presentation">home</i>Bloquear</a>
+          <a class="mdl-navigation__link" href=""><i class="mdl-color-text--blue-grey-400 material-icons" role="presentation">inbox</i>Documentación</a>
+
+          <div class="mdl-layout-spacer"></div>
+          <a class="mdl-navigation__link" href=""><i class="mdl-color-text--blue-grey-400 material-icons" role="presentation">help_outline</i>Ayuda<span class="visuallyhidden">Help</span></a>
+        </nav>
+      </div>
+
+      <main class="mdl-layout__content mdl-color--grey-100" >
+        <div id="passwordForm" class="demo-updates mdl-card mdl-shadow--2dp mdl-cell mdl-cell--4-col mdl-cell--4-col-tablet mdl-cell--12-col-desktop">
+        <div class="password-form">
+          <h5>Ingrese la contraseña:</h5>
+          <input type="password" id="password" />
+          <a class="waves-effect waves-light btn custom-btn" onclick="validarContrasena()">Desbloquear</a>
+        </div>
+      </div>
+        <div id="content" class="mdl-grid demo-content" style="visibility: hidden;">  
+          <div class="demo-updates mdl-card mdl-shadow--2dp mdl-cell mdl-cell--4-col mdl-cell--4-col-tablet mdl-cell--12-col-desktop">
+            <div class="mdl-card__title mdl-card--expand mdl-color--teal-300">
+              <h2 class="mdl-card__title-text left-align'">Acciones</h2>
+            </div>
+            <div class="mdl-card__supporting-text mdl-color-text--grey-600"> 
+              <div class="container">    
+                <div class="input-field">
+                    <label for="spInput">SetPoint:</label>
+                    <input type="number" id="spInput" class="validate" step="0.5" min="0" max="5">
+                </div>
+        
+                <div class="input-field">
+                    <select id="controlType">
+                        <option value="PID">PID</option>
+                        <option value="PI-D">PI-D</option>
+                        <option value="PI-PD">PI-PD</option>
+                        <option value="MANUAL">MANUAL PID</option>
+                        <option value="LA">LAZO ABIERTO</option>
+                    </select>
+                    <label>Tipo de Control</label>
+                </div>
+        
+                <a class="waves-effect waves-light btn custom-btn" onclick="actualizarSP()">Actualizar</a>
+                <a class="waves-effect waves-light btn red custom-btn" onclick="detenerBanda()">PARAR</a>
+                <!-- Nueva sección para la modal de configuración -->
+        <a class="waves-effect waves-light orange btn" onclick="abrirModal()">Configurar Manual PID</a>
+
+        <!-- Modal para ingresar los nuevos valores -->
+        <div id="modalManualPID" class="modal">
+          <div class="modal-content">
+              <h4>Configuración Manual PID</h4>
+              <form id="formManualPID">
+                  <div class="input-field">
+                      <input type="number" id="kpInput" step="0.1" required>
+                      <label for="kpInput">Kp</label>
+                  </div>
+                  <div class="input-field">
+                      <input type="number" id="kiInput" step="0.1" required>
+                      <label for="kiInput">Ki</label>
+                  </div>
+                  <div class="input-field">
+                      <input type="number" id="kdInput" step="0.1" required>
+                      <label for="kdInput">Kd</label>
+                  </div>
+                  <div class="input-field">
+                      <input type="number" id="kaInput" step="0.1" required>
+                      <label for="kaInput">Ka</label>
+                  </div>
+                  <div class="input-field">
+                      <input type="number" id="nInput" step="0.1" required>
+                      <label for="nInput">N</label>
+                  </div>
+                  <button type="button" class="waves-effect waves-light btn" onclick="actualizarManualPID()">Actualizar</button>
+              </form>
+          </div>
+      </div>
+      <!-- Fin de la sección de la modal -->
+            </div>            </div>
+
+          </div>
+
+          
+          
+
+          <div class="demo-graphs mdl-shadow--2dp mdl-color--white mdl-cell mdl-cell--8-col">
+            <!-- <canvas id="chart1" width="600" height="400"></canvas> -->
+            <div><canvas id="chart1" width="600" height="400"></canvas></div>
+            <div class="demo-separator mdl-cell--1-col"></div>
+
+            <div><canvas id="chart2" width="600" height="400"></canvas></div>
+
+          </div>
+
+
+          <div class="demo-cards mdl-cell mdl-cell--4-col mdl-cell--8-col-tablet mdl-grid mdl-grid--no-spacing">
+            <div class="demo-updates mdl-card mdl-shadow--2dp mdl-cell mdl-cell--4-col mdl-cell--4-col-tablet mdl-cell--12-col-desktop">
+              <div class="mdl-card__title mdl-card--expand mdl-color--teal-300">
+                <h2 class="mdl-card__title-text">Información</h2>
+              </div>
+              <div class="mdl-card__supporting-text mdl-color-text--grey-600"> 
+              <p>Velocidad (cm/s):</p>
+              <p id="velFilteredValue"></p>
+              <p>SetPoint:</p>
+              <p id="setPointValue"></p>
+              <p>% PWM:</p>
+              <p id="pwmValue"></p>
+              </div>
+              <div class="mdl-card__actions mdl-card--border">
+                <a class="waves-effect waves-light btn white custom-btn" onclick="limpiarGraficas()">Limpiar Datos</a>
+              </div>
+            </div>
+
+            
+
+            <div class="demo-separator mdl-cell--1-col"></div>
+
+            <div class="demo-updates mdl-card mdl-shadow--2dp mdl-cell mdl-cell--4-col mdl-cell--4-col-tablet mdl-cell--12-col-desktop">
+              <div class="mdl-card__title mdl-card--expand mdl-color--teal-300">
+                <h2 class="mdl-card__title-text">Información</h2>
+              </div>
+              <div class="mdl-card__supporting-text mdl-color-text--grey-600"> 
+              <p>Velocidad (rads/s):</p>
+              <p id="velFilteredValue"></p>
+              <p>SetPoint:</p>
+              <p id="setPointValue"></p>
+              <p>% PWM:</p>
+              <p id="pwmValue"></p>
+              </div>
+              <div class="mdl-card__actions mdl-card--border">
+                <a class="waves-effect waves-light btn white custom-btn" onclick="limpiarGraficas()">Limpiar Datos</a>
+              </div>
+            </div>
+            
+            
+
+
+            
+          </div>
+
+
+
+          
+
+          <div class="demo-updates mdl-card mdl-shadow--2dp mdl-cell mdl-cell--4-col mdl-cell--4-col-tablet mdl-cell--12-col-desktop">
+            <div class="mdl-card__title mdl-card--expand mdl-color--teal-300">
+              <h2 class="mdl-card__title-text left-align'">Terminal</h2>
+            </div>
+            <div class="mdl-card__supporting-text mdl-color-text--grey-600"> 
+              <div id="console"></div>
+            </div>
+            <div class="mdl-card__actions mdl-card--border">
+              <a class="waves-effect waves-light btn orange custom-btn" onclick="limpiarTerminal()">Limpiar Terminal</a>
+            </div>
+          </div>
+
+        </div>
+
+
+          
+  
+        </div>
+
+      </main>
+    </div>
+      <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" style="position: fixed; left: -1000px; height: -1000px;">
+        <defs>
+          <mask id="piemask" maskContentUnits="objectBoundingBox">
+            <circle cx=0.5 cy=0.5 r=0.49 fill="white" />
+            <circle cx=0.5 cy=0.5 r=0.40 fill="black" />
+          </mask>
+          <g id="piechart">
+            <circle cx=0.5 cy=0.5 r=0.5 />
+            <path d="M 0.5 0.5 0.5 0 A 0.5 0.5 0 0 1 0.95 0.28 z" stroke="none" fill="rgba(255, 255, 255, 0.75)" />
+          </g>
+        </defs>
+      </svg>
+      <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 500 250" style="position: fixed; left: -1000px; height: -1000px;">
+        <defs>
+          <g id="chart">
+            <g id="Gridlines">
+              <line fill="#888888" stroke="#888888" stroke-miterlimit="10" x1="0" y1="27.3" x2="468.3" y2="27.3" />
+              <line fill="#888888" stroke="#888888" stroke-miterlimit="10" x1="0" y1="66.7" x2="468.3" y2="66.7" />
+              <line fill="#888888" stroke="#888888" stroke-miterlimit="10" x1="0" y1="105.3" x2="468.3" y2="105.3" />
+              <line fill="#888888" stroke="#888888" stroke-miterlimit="10" x1="0" y1="144.7" x2="468.3" y2="144.7" />
+              <line fill="#888888" stroke="#888888" stroke-miterlimit="10" x1="0" y1="184.3" x2="468.3" y2="184.3" />
+            </g>
+            <g id="Numbers">
+              <text transform="matrix(1 0 0 1 485 29.3333)" fill="#888888" font-family="'Roboto'" font-size="9">500</text>
+              <text transform="matrix(1 0 0 1 485 69)" fill="#888888" font-family="'Roboto'" font-size="9">400</text>
+              <text transform="matrix(1 0 0 1 485 109.3333)" fill="#888888" font-family="'Roboto'" font-size="9">300</text>
+              <text transform="matrix(1 0 0 1 485 149)" fill="#888888" font-family="'Roboto'" font-size="9">200</text>
+              <text transform="matrix(1 0 0 1 485 188.3333)" fill="#888888" font-family="'Roboto'" font-size="9">100</text>
+              <text transform="matrix(1 0 0 1 0 249.0003)" fill="#888888" font-family="'Roboto'" font-size="9">1</text>
+              <text transform="matrix(1 0 0 1 78 249.0003)" fill="#888888" font-family="'Roboto'" font-size="9">2</text>
+              <text transform="matrix(1 0 0 1 154.6667 249.0003)" fill="#888888" font-family="'Roboto'" font-size="9">3</text>
+              <text transform="matrix(1 0 0 1 232.1667 249.0003)" fill="#888888" font-family="'Roboto'" font-size="9">4</text>
+              <text transform="matrix(1 0 0 1 309 249.0003)" fill="#888888" font-family="'Roboto'" font-size="9">5</text>
+              <text transform="matrix(1 0 0 1 386.6667 249.0003)" fill="#888888" font-family="'Roboto'" font-size="9">6</text>
+              <text transform="matrix(1 0 0 1 464.3333 249.0003)" fill="#888888" font-family="'Roboto'" font-size="9">7</text>
+            </g>
+            <g id="Layer_5">
+              <polygon opacity="0.36" stroke-miterlimit="10" points="0,223.3 48,138.5 154.7,169 211,88.5
+              294.5,80.5 380,165.2 437,75.5 469.5,223.3 	"/>
+            </g>
+            <g id="Layer_4">
+              <polygon stroke-miterlimit="10" points="469.3,222.7 1,222.7 48.7,166.7 155.7,188.3 212,132.7
+              296.7,128 380.7,184.3 436.7,125 	"/>
+            </g>
+          </g>
+        </defs>
+      </svg>
+    <script src="https://code.getmdl.io/1.3.0/material.min.js"></script>
+
+    <script>
+
+      document.addEventListener('DOMContentLoaded', function () {
+          // Inicializa los elementos de Materialize
+          M.AutoInit();
+      });
+
+      const socket = io();
+
+      socket.on('connect', function () {
+    document.getElementById('console').innerHTML += `<p>/* PROYECTO INTEGRADOR UNAB 202360 */</p>`;
+    document.getElementById('console').innerHTML += `<p>Conexión CLIENTE-SERVIDOR establecida correctamente.</p>`;
+
+  });
+
+            // Función para abrir la modal
+            function abrirModal() {
+        var instance = M.Modal.getInstance(document.getElementById('modalManualPID'));
+        instance.open();
+    }
+
+    // Función para cerrar la modal
+    function cerrarModal() {
+        var instance = M.Modal.getInstance(document.getElementById('modalManualPID'));
+        instance.close();
+    }
+
+    // Función para enviar los nuevos valores al servidor
+    function actualizarManualPID() {
+        var kp = parseFloat(document.getElementById('kpInput').value);
+        var ki = parseFloat(document.getElementById('kiInput').value);
+        var kd = parseFloat(document.getElementById('kdInput').value);
+        var ka = parseFloat(document.getElementById('kaInput').value);
+        var n = parseFloat(document.getElementById('nInput').value);
+
+        // Enviar los valores al servidor
+        fetch('/actualizar-manual-pid', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                kp: kp,
+                ki: ki,
+                kd: kd,
+                ka: ka,
+                n: n
+            }),
+        });
+
+        // Cerrar la modal después de enviar la solicitud
+        cerrarModal();
+    }
+
+  // socket.on('consoleMessage', function (message) {
+  //   // Muestra el mensaje en la consola HTML
+  //   var consoleDiv = document.getElementById('console');
+  // consoleDiv.innerHTML += `<li>${message}</li>`;
+  // consoleDiv.scrollTop = consoleDiv.scrollHeight;
+  // });
+
+      // Agrega objetos Chart para manejar los datos en tiempo real
+      const ctx1 = document.getElementById('chart1').getContext('2d');
+      const chart1 = new Chart(ctx1, {
+          type: 'line',
+          data: {
+              datasets: [{
+                  label: 'Velocidad Filtrada',
+                  data: [],
+                  borderColor: 'blue',
+                  borderWidth: 1,
+                  fill: false
+              },
+              {
+                  label: 'SP',
+                  data: [],
+                  borderColor: 'red',
+                  borderWidth: 1,
+                  fill: false,
+                  borderDash: [5, 5]
+              }]
+          },
+          options: {
+              animation: false,
+              scales: {
+                  x: {
+                      type: 'linear',
+                      position: 'bottom',
+                      ticks: {
+                          stepSize: 1000, // Puedes ajustar esto según tus necesidades
+                          callback: function (value, index, values) {
+                              return value / 1000 + 's'; // Convierte milisegundos a segundos
+                          }
+                      }
+                  },
+                  y: {
+                      min: 0,
+                      max: 32
+                  }
+              },
+              plugins: {
+                title: {
+                  display: true,
+                  text: 'GRAFICA VELOCIDAD',
+                      }
+                }
+              
+          }
+      });
+
+      const ctx2 = document.getElementById('chart2').getContext('2d');
+      const chart2 = new Chart(ctx2, {
+          type: 'line',
+          data: {
+              datasets: [{
+                  label: 'PWM',
+                  data: [],
+                  borderColor: 'green',
+                  borderWidth: 1,
+                  fill: false
+              }]
+          },
+          options: {
+              animation: false,
+              scales: {
+                  x: {
+                      type: 'linear',
+                      position: 'bottom',
+                      ticks: {
+                          stepSize: 1000, // Puedes ajustar esto según tus necesidades
+                          callback: function (value, index, values) {
+                              return value / 1000 + 's'; // Convierte milisegundos a segundos
+                          }
+                      }
+                  },
+                  y: {
+                      min: 0,
+                      max: 100
+                  }
+              },
+
+              plugins: {
+                title: {
+                  display: true,
+                  text: 'GRAFICA PWM',
+                      }
+                }
+          }
+      });
+
+      function updateChart1(data) {
+  chart1.data.datasets[0].data.push({
+      x: data.elapsedTime,
+      y: data.velFilteredL
+  });
+
+  // Asegúrate de que la escala del eje X se ajuste correctamente
+  const maxXValue = chart1.data.datasets[0].data[chart1.data.datasets[0].data.length - 1].x;
+  const minXValue = Math.max(0, maxXValue - 5000);
+  chart1.options.scales.x.min = minXValue;
+
+  // Limpiar datos antiguos que ya no se están graficando
+  const cutoffTime = minXValue;
+  chart1.data.datasets[0].data = chart1.data.datasets[0].data.filter(point => point.x >= cutoffTime);
+
+  // Actualiza la línea SP con el valor actual de SP
+  chart1.data.datasets[1].data = [{
+          x: minXValue,
+          y: data.spL // Utiliza el valor de SP directamente desde el objeto data
+      },
+      {
+          x: maxXValue,
+          y: data.spL // Utiliza el valor de SP directamente desde el objeto data
+      }
+  ];
+
+  chart1.update();
+}
+
+      // Función para actualizar el segundo gráfico con nuevos datos
+      function updateChart2(data) {
+          chart2.data.datasets[0].data.push({
+              x: data.elapsedTime,
+              y: (data.valorPWM / 255) * 100
+          });
+
+          // Asegúrate de que la escala del eje X se ajuste correctamente
+          const maxXValue = chart2.data.datasets[0].data[chart2.data.datasets[0].data.length - 1].x;
+          const minXValue = Math.max(0, maxXValue - 5000);
+          chart2.options.scales.x.min = minXValue;
+
+          // Limpiar datos antiguos que ya no se están graficando
+          const cutoffTime = minXValue;
+          chart2.data.datasets[0].data = chart2.data.datasets[0].data.filter(point => point.x >= cutoffTime);
+
+          chart2.update();
+      }
+
+      // Función para enviar la solicitud de actualización de SP y tipo de control al servidor
+// Función para enviar la solicitud de actualización de SP y tipo de control al servidor
+function actualizarSP() {
+  var spValue = parseFloat(document.getElementById('spInput').value);
+
+  // Verificar si el valor de SetPoint es positivo
+  if (spValue >= 0) {
+      var autoincrementValue = spValue !== 0;
+
+      // Obtener el tipo de control seleccionado
+      var controlType = document.getElementById('controlType').value;
+
+      // Enviar el SetPoint y el tipo de control al servidor
+      fetch('/actualizar-sp', {
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+              sp: spValue,
+              autoincrement: autoincrementValue,
+              controlType: controlType
+          }),
+      });
+
+              // Limpiar el campo de texto después de enviar la solicitud
+              spInput.value = '';
+  } else {
+      // Mostrar un mensaje de error o realizar alguna acción adecuada cuando el valor es negativo
+      alert('El valor de SetPoint debe ser positivo.');
+  }
+}
+
+
+      // Función para limpiar los datos de las gráficas
+      function limpiarGraficas() {
+  // Limpiar gráficas después de 2 segundos
+    chart1.data.datasets[0].data = [];
+    chart1.data.datasets[1].data = [];
+    chart1.update();
+
+    chart2.data.datasets[0].data = [];
+    chart2.update();
+
+    limpiarTextos();
+
+}
+
+
+      // Agrega esta función para mostrar el valor de data.velFiltered cada 250 ms
+function mostrarVelFiltered() {
+  setInterval(() => {
+      // Accede al último valor de data.velFiltered y muéstralo en el elemento
+      const ultimoValor = chart1.data.datasets[0].data.slice(-1)[0];
+      if (ultimoValor) {
+                  // Utiliza parseInt() o Math.floor() para mostrar solo el valor entero
+                  const valorEntero = parseFloat(ultimoValor.y).toFixed(3);
+                  // const valorEntero = Math.floor(ultimoValor.y);
+                  document.getElementById('velFilteredValue').textContent = `${valorEntero}`;
+              }
+  }, 250);
+}
+
+function mostrarSP() {
+  setInterval(() => {
+      
+// Accede al último valor de SP y muéstralo en el elemento
+const ultimoSP = chart1.data.datasets[1].data.slice(-1)[0];
+
+      if (ultimoSP) {
+                  // Utiliza parseInt() o Math.floor() para mostrar solo el valor entero
+                  const valorEntero = parseFloat(ultimoSP.y).toFixed(3);
+                  // const valorEntero = Math.floor(ultimoValor.y);
+                  document.getElementById('setPointValue').textContent = `${valorEntero}`;
+              }
+  }, 250);
+}
+
+function mostrarPWM() {
+  setInterval(() => {
+      
+// Accede al último valor de PWM y muéstralo en el elemento
+const ultimoPWM = chart2.data.datasets[0].data.slice(-1)[0];
+
+
+      if (ultimoPWM) {
+                  // Utiliza parseInt() o Math.floor() para mostrar solo el valor entero
+                  const valorEntero = parseFloat(ultimoPWM.y).toFixed(3);
+                  // const valorEntero = Math.floor(ultimoValor.y);
+                  document.getElementById('pwmValue').textContent = `${valorEntero}`;
+              }
+  }, 250);
+}
+
+
+      // Escuchar el evento de actualización de datos desde el servidor
+      socket.on('updateData', (data) => {
+          updateChart1(data);
+          updateChart2(data);
+      });
+
+      function detenerBanda() {
+          limpiarTextos();
+          // Enviar el SetPoint de 0 y el tipo de control al servidor
+          fetch('/actualizar-sp', {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                  sp: 0,
+                  autoincrement: false, // Puedes ajustar esto según tus necesidades
+                  controlType: document.getElementById('controlType').value
+              }),
+          });
+          
+      }
+
+      function limpiarTextos(){
+          chart1.data.datasets[0].data = [];
+          chart1.data.datasets[1].data = [];
+
+          chart2.data.datasets[0].data = [];
+                      // Limpia el contenido del elemento que muestra data.velFiltered
+  document.getElementById('velFilteredValue').textContent = '';
+  document.getElementById('setPointValue').textContent = '';
+  document.getElementById('pwmValue').textContent = '';
+      }
+
+      function limpiarTerminal(){
+        document.getElementById('console').textContent = '';
+
+      }
+
+      // Llama a la función mostrarVelFiltered después de cargar la página
+mostrarVelFiltered();
+mostrarSP();
+mostrarPWM();
+
+function validarContrasena() {
+        var passwordIngresada = document.getElementById('password').value;
+
+        // Reemplaza 'tuContraseña' con la contraseña que deseas
+        if (passwordIngresada === '5500') {
+            // Muestra el contenido si la contraseña es válida
+            document.getElementById('content').style.visibility = 'visible';
+            // Oculta el formulario de contraseña
+            document.getElementById('passwordForm').style.display = 'none';
+        } else {
+            // Muestra un mensaje de error o realiza alguna acción adecuada
+            alert('Contraseña incorrecta. Por favor, inténtelo de nuevo.');
+        }
+    }
+
+  </script>
+  </body>
+</html>

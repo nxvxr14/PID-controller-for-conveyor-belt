@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PROYECTO CONTROL 202360</title>
+    <!-- Enlaces a las bibliotecas necesarias -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.2.0/socket.io.js"></script>
+</head>
+
+<body>
+    <div class="container">
+        <h1>PROYECTO BANDA TRANSPORTADORA | CONTROL 202360</h1>
+
+        <div class="input-field">
+            <label for="spInput">SetPoint:</label>
+            <input type="number" id="spInput" class="validate" step="10" min="0">
+        </div>
+
+        <div class="input-field col s12">
+            <select id="controlType">
+                <option value="PID">PID</option>
+                <option value="PI-D">PI-D</option>
+                <option value="PI-PD">PI-PD</option>
+                <option value="LA">LAZO ABIERTO</option>
+            </select>
+            <label>Tipo de Control</label>
+        </div>
+
+        <a class="waves-effect waves-light btn" onclick="actualizarSP()">Actualizar</a>
+        <a class="waves-effect waves-light btn orange" onclick="limpiarGraficas()">Limpiar</a>
+        <a class="waves-effect waves-light btn red" onclick="detenerBanda()">STOP</a>
+
+
+        <p>Velocidad Actual</p>
+        <p id="velFilteredValue"></p>
+
+        <canvas id="chart1" width="800" height="400"></canvas>
+        <canvas id="chart2" width="800" height="400"></canvas>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Inicializa los elementos de Materialize
+            M.AutoInit();
+        });
+
+        const socket = io();
+
+        // Agrega objetos Chart para manejar los datos en tiempo real
+        const ctx1 = document.getElementById('chart1').getContext('2d');
+        const chart1 = new Chart(ctx1, {
+            type: 'line',
+            data: {
+                datasets: [{
+                    label: 'Velocidad Filtrada',
+                    data: [],
+                    borderColor: 'blue',
+                    borderWidth: 1,
+                    fill: false
+                },
+                {
+                    label: 'SP',
+                    data: [],
+                    borderColor: 'red',
+                    borderWidth: 1,
+                    fill: false,
+                    borderDash: [5, 5]
+                }]
+            },
+            options: {
+                animation: false,
+                scales: {
+                    x: {
+                        type: 'linear',
+                        position: 'bottom',
+                        ticks: {
+                            stepSize: 1000, // Puedes ajustar esto según tus necesidades
+                            callback: function (value, index, values) {
+                                return value / 1000 + 's'; // Convierte milisegundos a segundos
+                            }
+                        }
+                    },
+                    y: {
+                        min: 0,
+                        max: 5
+                    }
+                }
+            }
+        });
+
+        const ctx2 = document.getElementById('chart2').getContext('2d');
+        const chart2 = new Chart(ctx2, {
+            type: 'line',
+            data: {
+                datasets: [{
+                    label: 'PWM',
+                    data: [],
+                    borderColor: 'green',
+                    borderWidth: 1,
+                    fill: false
+                }]
+            },
+            options: {
+                animation: false,
+                scales: {
+                    x: {
+                        type: 'linear',
+                        position: 'bottom',
+                        ticks: {
+                            stepSize: 1000, // Puedes ajustar esto según tus necesidades
+                            callback: function (value, index, values) {
+                                return value / 1000 + 's'; // Convierte milisegundos a segundos
+                            }
+                        }
+                    },
+                    y: {
+                        min: 0,
+                        max: 100
+                    }
+                }
+            }
+        });
+
+        function updateChart1(data) {
+    chart1.data.datasets[0].data.push({
+        x: data.elapsedTime,
+        y: data.velFiltered
+    });
+
+    // Asegúrate de que la escala del eje X se ajuste correctamente
+    const maxXValue = chart1.data.datasets[0].data[chart1.data.datasets[0].data.length - 1].x;
+    const minXValue = Math.max(0, maxXValue - 10000);
+    chart1.options.scales.x.min = minXValue;
+
+    // Limpiar datos antiguos que ya no se están graficando
+    const cutoffTime = minXValue;
+    chart1.data.datasets[0].data = chart1.data.datasets[0].data.filter(point => point.x >= cutoffTime);
+
+    // Actualiza la línea SP con el valor actual de SP
+    chart1.data.datasets[1].data = [{
+            x: minXValue,
+            y: data.sp // Utiliza el valor de SP directamente desde el objeto data
+        },
+        {
+            x: maxXValue,
+            y: data.sp // Utiliza el valor de SP directamente desde el objeto data
+        }
+    ];
+
+    chart1.update();
+}
+
+        // Función para actualizar el segundo gráfico con nuevos datos
+        function updateChart2(data) {
+            chart2.data.datasets[0].data.push({
+                x: data.elapsedTime,
+                y: (data.valorPWM / 255) * 100
+            });
+
+            // Asegúrate de que la escala del eje X se ajuste correctamente
+            const maxXValue = chart2.data.datasets[0].data[chart2.data.datasets[0].data.length - 1].x;
+            const minXValue = Math.max(0, maxXValue - 10000);
+            chart2.options.scales.x.min = minXValue;
+
+            // Limpiar datos antiguos que ya no se están graficando
+            const cutoffTime = minXValue;
+            chart2.data.datasets[0].data = chart2.data.datasets[0].data.filter(point => point.x >= cutoffTime);
+
+            chart2.update();
+        }
+
+        // Función para enviar la solicitud de actualización de SP y tipo de control al servidor
+// Función para enviar la solicitud de actualización de SP y tipo de control al servidor
+function actualizarSP() {
+    var spValue = parseFloat(document.getElementById('spInput').value);
+
+    // Verificar si el valor de SetPoint es positivo
+    if (spValue >= 0) {
+        var autoincrementValue = spValue !== 0;
+
+        // Obtener el tipo de control seleccionado
+        var controlType = document.getElementById('controlType').value;
+
+        // Enviar el SetPoint y el tipo de control al servidor
+        fetch('/actualizar-sp', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                sp: spValue,
+                autoincrement: autoincrementValue,
+                controlType: controlType
+            }),
+        });
+
+                // Limpiar el campo de texto después de enviar la solicitud
+                spInput.value = '';
+    } else {
+        // Mostrar un mensaje de error o realizar alguna acción adecuada cuando el valor es negativo
+        alert('El valor de SetPoint debe ser positivo.');
+    }
+}
+
+
+        // Función para limpiar los datos de las gráficas
+        function limpiarGraficas() {
+            chart1.data.datasets[0].data = [];
+            chart1.data.datasets[1].data = [];
+            chart1.update();
+
+            chart2.data.datasets[0].data = [];
+            chart2.update();
+
+            // Limpia el contenido del elemento que muestra data.velFiltered
+    document.getElementById('velFilteredValue').textContent = '';
+        }
+
+        // Agrega esta función para mostrar el valor de data.velFiltered cada 250 ms
+function mostrarVelFiltered() {
+    setInterval(() => {
+        // Accede al último valor de data.velFiltered y muéstralo en el elemento
+        const ultimoValor = chart1.data.datasets[0].data.slice(-1)[0];
+        if (ultimoValor) {
+                    // Utiliza parseInt() o Math.floor() para mostrar solo el valor entero
+                    const valorEntero = parseFloat(ultimoValor.y).toFixed(3);
+                    // const valorEntero = Math.floor(ultimoValor.y);
+                    document.getElementById('velFilteredValue').textContent = `${valorEntero}`;
+                }
+    }, 250);
+}
+
+// Llama a la función mostrarVelFiltered después de cargar la página
+mostrarVelFiltered();
+
+        // Escuchar el evento de actualización de datos desde el servidor
+        socket.on('updateData', (data) => {
+            updateChart1(data);
+            updateChart2(data);
+        });
+
+        function detenerBanda() {
+            // Enviar el SetPoint de 0 y el tipo de control al servidor
+            fetch('/actualizar-sp', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    sp: 0,
+                    autoincrement: false, // Puedes ajustar esto según tus necesidades
+                    controlType: document.getElementById('controlType').value
+                }),
+            });
+        }
+    </script>
+</body>
+
+</html>
+
+

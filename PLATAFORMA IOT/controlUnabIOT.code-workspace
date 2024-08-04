@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../../Downloads/argon-dashboard-master"
+		}
+	],
+	"settings": {
+		"liveServer.settings.multiRootWorkspaceName": "argon-dashboard-master"
+	}
+}

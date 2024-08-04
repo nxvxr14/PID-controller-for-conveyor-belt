@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control de SP</title>
+    <!-- Agrega los enlaces a las bibliotecas necesarias -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.2.0/socket.io.js"></script>
+</head>
+
+<body>
+    <h1>Control de SP</h1>
+    <label for="spInput">SP:</label>
+    <input type="number" id="spInput" step="0.001">
+
+    <!-- Agrega los selectores para elegir el tipo de control -->
+    <select id="controlType">
+        <option value="PID">PID</option>
+        <option value="PI-D">PI-D</option>
+        <option value="PI-PD">PI-PD</option>
+        <option value="LA">LAZO ABIERTO</option>
+    </select>
+
+    <!-- Botón de actualización -->
+    <button onclick="actualizarSP()">Actualizar</button>
+
+    <!-- Botón de limpiar gráficas -->
+    <button onclick="limpiarGraficas()">Limpiar</button>
+
+    <!-- Agrega elementos canvas para los gráficos -->
+    <canvas id="chart1" width="800" height="400"></canvas>
+    <canvas id="chart2" width="800" height="400"></canvas>
+
+    <script>
+        const socket = io();
+
+        // Agrega objetos Chart para manejar los datos en tiempo real
+        const ctx1 = document.getElementById('chart1').getContext('2d');
+        const chart1 = new Chart(ctx1, {
+            type: 'line',
+            data: {
+                datasets: [{
+                    label: 'Velocidad Filtrada',
+                    data: [],
+                    borderColor: 'blue',
+                    borderWidth: 1,
+                    fill: false
+                },
+                {
+                    label: 'SP',
+                    data: [],
+                    borderColor: 'red',
+                    borderWidth: 1,
+                    fill: false,
+                    borderDash: [5, 5]
+                }]
+            },
+            options: {
+                animation: false,
+                scales: {
+                    x: {
+                        type: 'linear',
+                        position: 'bottom',
+                        ticks: {
+                            stepSize: 1000, // Puedes ajustar esto según tus necesidades
+                            callback: function (value, index, values) {
+                                return value / 1000 + 's'; // Convierte milisegundos a segundos
+                            }
+                        }
+                    },
+                    y: {
+                        min: 0,
+                        max: 1200
+                    }
+                }
+            }
+        });
+
+        const ctx2 = document.getElementById('chart2').getContext('2d');
+        const chart2 = new Chart(ctx2, {
+            type: 'line',
+            data: {
+                datasets: [{
+                    label: 'PWM',
+                    data: [],
+                    borderColor: 'green',
+                    borderWidth: 1,
+                    fill: false
+                }]
+            },
+            options: {
+                animation: false,
+                scales: {
+                    x: {
+                        type: 'linear',
+                        position: 'bottom',
+                        ticks: {
+                            stepSize: 1000, // Puedes ajustar esto según tus necesidades
+                            callback: function (value, index, values) {
+                                return value / 1000 + 's'; // Convierte milisegundos a segundos
+                            }
+                        }
+                    },
+                    y: {
+                        min: 0,
+                        max: 100
+                    }
+                }
+            }
+        });
+
+        function updateChart1(data) {
+    chart1.data.datasets[0].data.push({
+        x: data.elapsedTime,
+        y: data.velFiltered
+    });
+
+    // Asegúrate de que la escala del eje X se ajuste correctamente
+    const maxXValue = chart1.data.datasets[0].data[chart1.data.datasets[0].data.length - 1].x;
+    const minXValue = Math.max(0, maxXValue - 10000);
+    chart1.options.scales.x.min = minXValue;
+
+    // Limpiar datos antiguos que ya no se están graficando
+    const cutoffTime = minXValue;
+    chart1.data.datasets[0].data = chart1.data.datasets[0].data.filter(point => point.x >= cutoffTime);
+
+    // Actualiza la línea SP con el valor actual de SP
+    chart1.data.datasets[1].data = [{
+            x: minXValue,
+            y: data.sp // Utiliza el valor de SP directamente desde el objeto data
+        },
+        {
+            x: maxXValue,
+            y: data.sp // Utiliza el valor de SP directamente desde el objeto data
+        }
+    ];
+
+    chart1.update();
+}
+
+        // Función para actualizar el segundo gráfico con nuevos datos
+        function updateChart2(data) {
+            chart2.data.datasets[0].data.push({
+                x: data.elapsedTime,
+                y: (data.valorPWM / 125) * 100
+            });
+
+            // Asegúrate de que la escala del eje X se ajuste correctamente
+            const maxXValue = chart2.data.datasets[0].data[chart2.data.datasets[0].data.length - 1].x;
+            const minXValue = Math.max(0, maxXValue - 10000);
+            chart2.options.scales.x.min = minXValue;
+
+            // Limpiar datos antiguos que ya no se están graficando
+            const cutoffTime = minXValue;
+            chart2.data.datasets[0].data = chart2.data.datasets[0].data.filter(point => point.x >= cutoffTime);
+
+            chart2.update();
+        }
+
+        // Función para enviar la solicitud de actualización de SP y tipo de control al servidor
+        function actualizarSP() {
+            var spValue = document.getElementById('spInput').value;
+            var autoincrementValue = spValue !== '0';
+
+            // Obtiene el tipo de control seleccionado
+            var controlType = document.getElementById('controlType').value;
+
+            // Envia el setpoint y el tipo de control al servidor
+            fetch('/actualizar-sp', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    sp: parseFloat(spValue),
+                    autoincrement: autoincrementValue,
+                    controlType: controlType
+                }),
+            });
+        }
+
+        // Función para limpiar los datos de las gráficas
+        function limpiarGraficas() {
+            chart1.data.datasets[0].data = [];
+            chart1.data.datasets[1].data = [];
+            chart1.update();
+
+            chart2.data.datasets[0].data = [];
+            chart2.update();
+        }
+
+        // Escuchar el evento de actualización de datos desde el servidor
+        socket.on('updateData', (data) => {
+            updateChart1(data);
+            updateChart2(data);
+        });
+    </script>
+</body>
+
+</html>
